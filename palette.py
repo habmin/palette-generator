@@ -23,6 +23,13 @@ def validate_hex(string):
     print(bool(match))
     return bool(match)
 
+def validate_rgb(string):
+    string_list = re.split('[ ,]+', string)
+    for number in string_list:
+        if int(number) not in range(0, 256):
+            return False
+    return True
+
 def color_convertor(color_string):
     color_list = []
     # check to see if the argument passed is hexadecimal value
@@ -30,9 +37,21 @@ def color_convertor(color_string):
         color_string = color_string[1:]
         # check for valid hex input
         if validate_hex(color_string):
-            sys.exit("Valid hex value");
+            # convert hex to list of rgb list
+            for i in range(0, 6, 2):
+                color_list.append(int(color_string[i:i+2], 16))
+            return color_list
         else:
             sys.exit("Invalid hex value, must be six digits long in rrbbgg form")
+    else:
+        string_list = re.split('[ ,]+', color_string)
+        if len(string_list) != 3:
+            sys.exit('Must have only three RGB int values')
+        for number in string_list:
+            if int(number) not in range(0, 256):
+                sys.exit("RBG values must be 0-255")
+            else:
+                color_list.append(int(number))
 
 
 
