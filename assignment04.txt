@@ -1,0 +1,7 @@
+Using any language you like (I strongly recommend R or Python or Javascript), design the following color functions:
+
+Given an RGB color, create a monochromatic palette
+
+Given an RGB color, create a complimentary palette
+
+Given an RGB color, create an analogous palette
