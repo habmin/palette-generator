@@ -2,9 +2,10 @@ import sys
 from subprocess import run
 import argparse
 import re
+from colorsys import rgb_to_hsv, hsv_to_rgb
 import importlib.util
 
-def create_analogous(color_list, size):
+def create_monochromatic(color_list, size):
     palette_list = []
     for i in range(size):
         if i == size - 1:
@@ -19,6 +20,7 @@ def create_analogous(color_list, size):
 
 def create_complimentary(color_list, size):
     palette_list = []
+
     inverse = [abs(color_list[0] - 255), abs(color_list[1] - 255), abs(color_list[2] - 255)]
     for i in range(size):
         if i == size - 1:
@@ -28,6 +30,31 @@ def create_complimentary(color_list, size):
                     abs(color_list[1] - ((color_list[1] - inverse[1]) // (size - 1)) * i),
                     abs(color_list[2] - ((color_list[2] - inverse[2]) // (size - 1)) * i)]
             palette_list.append(cell)
+    return palette_list
+
+def create_analogous(color_list, size):
+    start_hsv = rgb_to_hsv(color_list[0] / 255, color_list[1] / 255, color_list[2] / 255)
+    start_hue = None;
+    if ((start_hsv[0] - (60/359)) < 360 and (start_hsv[0] - (60/359)) >= 0):
+        start_hue = start_hsv[0] - (60/359)
+    else:
+        start_hue = 1 - abs(start_hsv[0] - 60/359)
+    start_hsv = (start_hue, start_hsv[1], start_hsv[2])
+    
+    middle = color_list
+    
+    palette_list = []
+    increment = (60/359) / ((size - 1) // 2)
+
+    for i in range(size):
+        if i == size // 2:
+            palette_list.append(middle)
+        else:
+            print(start_hsv[0] + (increment * i))
+            rgb = hsv_to_rgb(start_hsv[0] + (increment * i), start_hsv[1], start_hsv[2])
+            print(rgb)
+            palette_list.append([int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)])
+    
     return palette_list
 
 
@@ -103,7 +130,8 @@ def driver(*args, **kwargs):
         color_palette = create_analogous(color_list, args.size)
     elif (args.palette[:1] == 'c'):
         color_palette = create_complimentary(color_list, args.size)
-
+    elif (args.palette[:1] == 'm'):
+        color_palette = create_monochromatic(color_list, args.size)
     if args.display:
         display_palette(color_palette, args.size)
 
