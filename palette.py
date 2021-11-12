@@ -17,6 +17,19 @@ def create_analogous(color_list, size):
             palette_list.append(cell)
     return palette_list
 
+def create_complimentary(color_list, size):
+    palette_list = []
+    inverse = [abs(color_list[0] - 255), abs(color_list[1] - 255), abs(color_list[2] - 255)]
+    for i in range(size):
+        if i == size - 1:
+            palette_list.append(inverse)
+        else:
+            cell = [abs(color_list[0] - ((color_list[0] - inverse[0]) // (size - 1)) * i),
+                    abs(color_list[1] - ((color_list[1] - inverse[1]) // (size - 1)) * i),
+                    abs(color_list[2] - ((color_list[2] - inverse[2]) // (size - 1)) * i)]
+            palette_list.append(cell)
+    return palette_list
+
 
 def display_palette(palette, size):
     print("draw please")
@@ -75,7 +88,8 @@ def driver(*args, **kwargs):
                                 'A', 'all'])
     parser.add_argument('--color', '-c', dest='color', default='#00FF00')
     parser.add_argument('--size', '-s', dest='size', type=int, default=5, choices=range(1, 11))
-    parser.add_argument('--print', '-pr', dest='print', type=bool, default=True)
+    parser.add_argument('--print', '-pr', dest='print', 
+                        choices=['rgb', 'hex', 'none'], default=None)
     parser.add_argument('--display', '-d', dest='display', type=bool, default=False)
     parser.add_argument('--output', '-o', dest='output', default=None)
 
@@ -87,31 +101,24 @@ def driver(*args, **kwargs):
 
     if (args.palette[:1] == 'a' and args.palette != 'all'):
         color_palette = create_analogous(color_list, args.size)
-        if args.display:
-            display_palette(color_palette, args.size)
-        if args.print:
-            if args.color[:1] == '#':
-                convert_palette= []
-                for cell in color_palette:
-                    # print(cell)
-                    # convert_cell = f"{hex(cell[0])}{hex(cell[1])}{hex(cell[2])}"
-                    convert_cell = ''.join('{:02x}'.format(x) for x in cell)
-                    convert_palette.append(f'#{convert_cell.upper()}')
-                print(convert_palette);
+    elif (args.palette[:1] == 'c'):
+        color_palette = create_complimentary(color_list, args.size)
+
+    if args.display:
+        display_palette(color_palette, args.size)
+
+    if args.print == 'hex' or (args.color[:1] == '#' and args.print is None):
+        convert_palette= []
+        for cell in color_palette:
+            convert_cell = ''.join('{:02x}'.format(x) for x in cell)
+            convert_palette.append(f'#{convert_cell.upper()}')
+        print(convert_palette);
+    elif args.print == 'rgb' or args.print is None:
+        print(color_palette)
+    # elif args.print == 'rgb' or args.color is None:
 
 
-    sys.exit(color_palette);
+    sys.exit(0);
 
 if __name__ == '__main__':
     driver(*sys.argv)
-
-# img = Image.new('RGB', (500, 100), (255, 255, 255))
-# draw = ImageDraw.Draw(img)
-
-# def generate_palette():
-#     for x in range(5):
-#         draw.rectangle((0, 0, (x+1)*100, (x+1)*100), fill=(255, 0, 0))
-#     img.show()
-#     img.save('output.png', "PNG");
-
-# generate_palette();
