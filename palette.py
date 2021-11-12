@@ -2,7 +2,10 @@ import sys
 import argparse
 import re
 from colorsys import rgb_to_hsv, hsv_to_rgb
+import random
 
+# Monochromatic
+# Gradually goes from selected color to black, increments based on the palette size
 def create_monochromatic(color_list, size):
     palette_list = []
     for i in range(size):
@@ -16,10 +19,13 @@ def create_monochromatic(color_list, size):
             palette_list.append(cell)
     return palette_list
 
+# Complimentary
+# Determines inverse of selected color, then increments towards that inverse by size i incrememnets
 def create_complimentary(color_list, size):
     palette_list = []
 
     inverse = [abs(color_list[0] - 255), abs(color_list[1] - 255), abs(color_list[2] - 255)]
+
     for i in range(size):
         if i == size - 1:
             palette_list.append(inverse)
@@ -30,6 +36,11 @@ def create_complimentary(color_list, size):
             palette_list.append(cell)
     return palette_list
 
+# Analogous
+# A bit tricky to figure out, converted rgb value to a hsl value, as it's far easier to 
+# transverse neighboring colors.
+# Endpoints are 60 degrees away from starting color, in each direction, with selected color in the middle
+# Increments towards and away from selected color based on palette size
 def create_analogous(color_list, size):
     start_hsv = rgb_to_hsv(color_list[0] / 255, color_list[1] / 255, color_list[2] / 255)
     start_hue = None;
@@ -53,7 +64,6 @@ def create_analogous(color_list, size):
     
     return palette_list
 
-
 def display_palette(palette, size, output):
     from PIL import Image, ImageDraw
     # create white canvas based on size
@@ -76,6 +86,8 @@ def validate_hex(string):
     return bool(match)
 
 def color_parser(color_string):
+    if color_string == 'random':
+        return random_color()
     return_color = []
     # check to see if the argument passed is hexadecimal value
     if color_string[:1] == '#':
@@ -109,6 +121,12 @@ def hex_to_rgb(color_palette):
         convert_palette.append(f'#{convert_cell.upper()}')
     return convert_palette
 
+def random_color():
+    return_color = []
+    for i in range(3):
+        return_color.append(random.randint(0, 255))
+    return return_color
+
 def driver(*args, **kwargs):
     parser = argparse.ArgumentParser(description='Color Palette Generator')
     parser.add_argument('--palette', '-p', type=str, dest='palette', default='all', 
@@ -116,7 +134,7 @@ def driver(*args, **kwargs):
                                 'm', 'mono', 'monochromatic',
                                 'c', 'comp', 'complimentary',
                                 'A', 'all'])
-    parser.add_argument('--color', '-c', dest='color', default='#00FF00')
+    parser.add_argument('--color', '-c', dest='color', default='random')
     parser.add_argument('--size', '-s', dest='size', type=int, default=5, choices=range(1, 11))
     parser.add_argument('--print', '-pr', dest='print', 
                         choices=['rgb', 'hex', 'none'], default=None)
@@ -153,8 +171,9 @@ def driver(*args, **kwargs):
         print("\n")
         print_range = 3 if (args.palette == 'A' or args.palette == 'all') else 1
         choice = 0 if (args.palette == args.palette[:1] == 'm') else 1 if args.palette[:1] == 'c' else 2 if (args.palette[:1] == 'a' and args.palette != 'all') else 0
+        color_selected = args.color if args.color != 'random' else color_list
         for i in range(print_range):
-            print(f"****** {palette_choices[choice]} of {args.color} ******")
+            print(f"****** {palette_choices[choice]} of {color_selected} ******")
             if args.print == 'hex' or (args.color[:1] == '#' and args.print is None):
                 convert_palette = hex_to_rgb(color_palette[i])
                 print(convert_palette);
