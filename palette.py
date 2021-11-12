@@ -1,3 +1,15 @@
+# Henry Baum
+# CSCI 39579-01
+# Professor Ariel Avshalom
+# November 14 2021
+# Assignment 4 - Color Palette Functions
+
+# Readme provides instructions and options for program, but if you wish to just see if it works,
+# running the script with run the defaults with a random rgb color, printing each of the three
+# palettes in their [rrr, ggg, bbb] numeric form. For hexadecimal, provide the argument "-p hex".
+
+# Note: Requires 'Pillow' module in order to display and write image files
+
 import sys
 import argparse
 import re
@@ -64,7 +76,7 @@ def create_analogous(color_list, size):
     
     return palette_list
 
-def display_palette(palette, size, output):
+def generate_palette(palette, size):
     from PIL import Image, ImageDraw
     # create white canvas based on size
     img = Image.new('RGB', ((100 * size), (100 * len(palette))), (255, 255, 255))
@@ -73,12 +85,7 @@ def display_palette(palette, size, output):
         for j in range(size):
             draw.rectangle(((100 * j), (100 * i), (j + 1) * 100, (i + 1) * 100), 
                             fill=(palette[i][j][0], palette[i][j][1], palette[i][j][2]))
-    img.show()
-    if output:
-        if output.isalnum():
-            img.save(f"{output}.png", 'png')
-        else:
-            print("*** WARNING ***: Firename must only contain letters or numbers, aborting writing output file")
+    return img
 
 def validate_hex(string):
     regex = re.compile('[0-9a-fA-F]{6}\Z', re.I)
@@ -143,13 +150,13 @@ def driver(*args, **kwargs):
                         or A/all for all three. Default: all""")
     parser.add_argument('--color', '-c', dest='color', default='random',
                         help="""Input a color. 
-                        For RGB, insert as 'r, g, b' with values between 0-255 (no parentheses).
+                        For RGB, insert as 'rrr, ggg, bbb' with values between 0-255 (no parentheses).
                         For hex into, write in '#rrggbb' form, including the octothorpe at the start.
                         You can also use 'random', where a random rgb value will be selected.
                         Default: random""")
     parser.add_argument('--size', '-s', dest='size', type=int, default=5, choices=range(1, 11),
                         help="""Select how many palette cells you want, from 1-10. Default: 5""")
-    parser.add_argument('--print', '-pr', dest='print', 
+    parser.add_argument('--print', '-p', dest='print', 
                         choices=['rgb', 'hex', 'none'], default=None,
                         help="""
                         Prints the palette(s) in either 'rgb' or 'hex' form. Can also disable printing with 'none'.
@@ -157,12 +164,13 @@ def driver(*args, **kwargs):
                         """)
     parser.add_argument('--display', '-d', dest='display', action="store_true", default=False,
                         help="""
-                        Generates an image of palette(s). Requires Pillow module installed.
+                        Generates and displays an image of selected palette(s). Requires Pillow module installed.
                         Default: False
                         """)
     parser.add_argument('--output', '-o', dest='output', default=None,
                         help="""
-                        Writes a png image file to root directory, with "input" after arguemnt flag. Only accepts alpha-numeric characters.
+                        Writes a png image file to root directory, with "input" after arguemnt flag. 
+                        Only accepts alpha-numeric characters. Requires Pillow module installed.
                         Default: None
                         """)
 
@@ -173,6 +181,8 @@ def driver(*args, **kwargs):
     color_list = color_parser(args.color)
     
     color_palette = []
+
+    png_image = None
 
     if (args.palette[:1] == 'm'):
         color_palette.append(create_monochromatic(color_list, args.size))
@@ -185,12 +195,6 @@ def driver(*args, **kwargs):
         color_palette.append(create_complimentary(color_list, args.size))
         color_palette.append(create_analogous(color_list, args.size))
 
-    if args.display:
-        try:
-            from PIL import Image, ImageDraw
-            display_palette(color_palette, args.size, args.output)
-        except ModuleNotFoundError:
-            print("*** WARNING ***: Pillow module was not found, will not display or create an image of palette\n")
 
     if args.print != 'none':
         print("\n")
@@ -206,6 +210,28 @@ def driver(*args, **kwargs):
                 print(color_palette[i])
             print("\n")
             choice += 1        
+
+    if args.display:
+        try:
+            from PIL import Image, ImageDraw
+            png_image = generate_palette(color_palette, args.size)
+            png_image.show()
+        except ModuleNotFoundError:
+            print("*** WARNING ***: Pillow module was not found, aborting display image\n")
+
+    if args.output:
+        try:
+            from PIL import Image, ImageDraw
+            if args.output.isalnum():
+                if png_image:
+                    png_image.save(f"{args.output}.png", 'png')
+                else:
+                    png_image = generate_palette(color_palette, args.size)
+                    png_image.save(f"{args.output}.png", 'png')
+            else:
+                print("*** WARNING ***: Firename must only contain letters or numbers, aborting writing output file\n")
+        except ModuleNotFoundError:
+            print("*** WARNING ***: Pillow module was not found, image file output aborted\n")
 
     sys.exit(0);
 
