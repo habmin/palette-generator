@@ -128,18 +128,43 @@ def random_color():
     return return_color
 
 def driver(*args, **kwargs):
-    parser = argparse.ArgumentParser(description='Color Palette Generator')
-    parser.add_argument('--palette', '-p', type=str, dest='palette', default='all', 
+    parser = argparse.ArgumentParser(description=
+    """Color Palette Generator - Generates and outputs monochromatic, complimentary, or analogous
+    palletes based on RGB or HEX input""")
+    parser.add_argument('--type', '-t', type=str, dest='palette', default='all', 
                         choices=['a', 'analog', 'analogous',
                                 'm', 'mono', 'monochromatic',
                                 'c', 'comp', 'complimentary',
-                                'A', 'all'])
-    parser.add_argument('--color', '-c', dest='color', default='random')
-    parser.add_argument('--size', '-s', dest='size', type=int, default=5, choices=range(1, 11))
+                                'A', 'all'],
+                        help=""""Choose from the three palette types: 
+                        m/mono/monochromatic for monochromatic, 
+                        c/comp/complimentary for complimentary,
+                        a/analog/analogous for analogous,
+                        or A/all for all three. Default: all""")
+    parser.add_argument('--color', '-c', dest='color', default='random',
+                        help="""Input a color. 
+                        For RGB, insert as 'r, g, b' with values between 0-255 (no parentheses).
+                        For hex into, write in '#rrggbb' form, including the octothorpe at the start.
+                        You can also use 'random', where a random rgb value will be selected.
+                        Default: random""")
+    parser.add_argument('--size', '-s', dest='size', type=int, default=5, choices=range(1, 11),
+                        help="""Select how many palette cells you want, from 1-10. Default: 5""")
     parser.add_argument('--print', '-pr', dest='print', 
-                        choices=['rgb', 'hex', 'none'], default=None)
-    parser.add_argument('--display', '-d', dest='display', type=bool, default=False)
-    parser.add_argument('--output', '-o', dest='output', default=None)
+                        choices=['rgb', 'hex', 'none'], default=None,
+                        help="""
+                        Prints the palette(s) in either 'rgb' or 'hex' form. Can also disable printing with 'none'.
+                        Default: Prints based on input type of rgb or hex
+                        """)
+    parser.add_argument('--display', '-d', dest='display', action="store_true", default=False,
+                        help="""
+                        Generates an image of palette(s). Requires Pillow module installed.
+                        Default: False
+                        """)
+    parser.add_argument('--output', '-o', dest='output', default=None,
+                        help="""
+                        Writes a png image file to root directory, with "input" after arguemnt flag. Only accepts alpha-numeric characters.
+                        Default: None
+                        """)
 
     args = parser.parse_args()
 
@@ -171,7 +196,7 @@ def driver(*args, **kwargs):
         print("\n")
         print_range = 3 if (args.palette == 'A' or args.palette == 'all') else 1
         choice = 0 if (args.palette == args.palette[:1] == 'm') else 1 if args.palette[:1] == 'c' else 2 if (args.palette[:1] == 'a' and args.palette != 'all') else 0
-        color_selected = args.color if args.color != 'random' else color_list
+        color_selected = color_list if (args.print == 'rgb' or (args.color[:1] != '#' and args.print == None)) else '#' + ''.join('{:02X}'.format(x) for x in color_list)
         for i in range(print_range):
             print(f"****** {palette_choices[choice]} of {color_selected} ******")
             if args.print == 'hex' or (args.color[:1] == '#' and args.print is None):
