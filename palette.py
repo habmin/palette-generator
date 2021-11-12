@@ -143,11 +143,11 @@ def driver(*args, **kwargs):
                                 'm', 'mono', 'monochromatic',
                                 'c', 'comp', 'complimentary',
                                 'A', 'all'],
-                        help=""""Choose from the three palette types: 
-                        m/mono/monochromatic for monochromatic, 
-                        c/comp/complimentary for complimentary,
-                        a/analog/analogous for analogous,
-                        or A/all for all three. Default: all""")
+                        help=""""Choose from the four options: 
+                        1. m/mono/monochromatic for monochromatic, 
+                        2. c/comp/complimentary for complimentary,
+                        3. a/analog/analogous for analogous,
+                        4. A/all for all three. Default: all""")
     parser.add_argument('--color', '-c', dest='color', default='random',
                         help="""Input a color. 
                         For RGB, insert as 'rrr, ggg, bbb' with values between 0-255 (no parentheses).
@@ -155,22 +155,27 @@ def driver(*args, **kwargs):
                         You can also use 'random', where a random rgb value will be selected.
                         Default: random""")
     parser.add_argument('--size', '-s', dest='size', type=int, default=5, choices=range(1, 11),
-                        help="""Select how many palette cells you want, from 1-10. Default: 5""")
+                        help="""
+                        Select how many palette cells you want, from 1-10. 
+                        Default: 5""")
     parser.add_argument('--print', '-p', dest='print', 
                         choices=['rgb', 'hex', 'none'], default=None,
                         help="""
-                        Prints the palette(s) in either 'rgb' or 'hex' form. Can also disable printing with 'none'.
+                        Prints the palette(s) in either 'rgb' or 'hex' form.
+                        Can also disable printing with 'none'.
                         Default: Prints based on input type of rgb or hex
                         """)
     parser.add_argument('--display', '-d', dest='display', action="store_true", default=False,
                         help="""
-                        Generates and displays an image of selected palette(s). Requires Pillow module installed.
+                        Generates and displays an image of selected palette(s). 
+                        Requires Pillow module installed.
                         Default: False
                         """)
     parser.add_argument('--output', '-o', dest='output', default=None,
                         help="""
                         Writes a png image file to root directory, with "input" after arguemnt flag. 
-                        Only accepts alpha-numeric characters. Requires Pillow module installed.
+                        Only accepts alpha-numeric characters.
+                        Requires Pillow module installed.
                         Default: None
                         """)
 
