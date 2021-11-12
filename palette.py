@@ -1,9 +1,7 @@
 import sys
-from subprocess import run
 import argparse
 import re
 from colorsys import rgb_to_hsv, hsv_to_rgb
-import importlib.util
 
 def create_monochromatic(color_list, size):
     palette_list = []
@@ -56,14 +54,21 @@ def create_analogous(color_list, size):
     return palette_list
 
 
-def display_palette(palette, size):
+def display_palette(palette, size, output):
     from PIL import Image, ImageDraw
     # create white canvas based on size
-    img = Image.new('RGB', ((100 * size), 100), (255, 255, 255))
+    img = Image.new('RGB', ((100 * size), (100 * len(palette))), (255, 255, 255))
     draw = ImageDraw.Draw(img)
-    for i in range(size):
-        draw.rectangle(((100 * i), 0, (i + 1) * 100, (i + 1) * 100), fill=(palette[i][0], palette[i][1], palette[i][2]))
+    for i in range(len(palette)):
+        for j in range(size):
+            draw.rectangle(((100 * j), (100 * i), (j + 1) * 100, (i + 1) * 100), 
+                            fill=(palette[i][j][0], palette[i][j][1], palette[i][j][2]))
     img.show()
+    if output:
+        if output.isalnum():
+            img.save(f"{output}.png", 'png')
+        else:
+            print("*** WARNING ***: Firename must only contain letters or numbers, aborting writing output file")
 
 def validate_hex(string):
     regex = re.compile('[0-9a-fA-F]{6}\Z', re.I)
@@ -84,9 +89,10 @@ def color_parser(color_string):
             sys.exit("Invalid hex value, must be six digits long in rrbbgg form")
     else:
         # split string by white space, comma, or parentheses
-        string_list = re.split('[() ,]+', color_string)
+        string_list = re.split('[ ,]+', color_string)
         # check to see if there are eactly three value
         if len(string_list) != 3:
+            print(string_list)
             sys.exit('Must have only three RGB int values')
         # check and append list if each value is between 0-255
         for number in string_list:
@@ -137,11 +143,11 @@ def driver(*args, **kwargs):
         color_palette.append(create_analogous(color_list, args.size))
 
     if args.display:
-        if args.palette[:1] == 'A' or args.palette == 'all':
-            for palette in color_palette:
-                display_palette(palette, args.size)
-        else:
-            display_palette(color_palette, args.size)
+        try:
+            from PIL import Image, ImageDraw
+            display_palette(color_palette, args.size, args.output)
+        except ModuleNotFoundError:
+            print("*** WARNING ***: Pillow module was not found, will not display or create an image of palette\n")
 
     if args.print != 'none':
         print("\n")
@@ -156,9 +162,6 @@ def driver(*args, **kwargs):
                 print(color_palette[i])
             print("\n")
             choice += 1        
-        # elif args.print == 'rgb' or args.print is None:
-    # elif args.print == 'rgb' or args.color is None:
-
 
     sys.exit(0);
 
